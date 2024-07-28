@@ -13,17 +13,10 @@ QuickQuant is a high-performance quantitative finance library that provides impl
 To install QuickQuant, follow these steps:
 
 1. Ensure you have Python 3.x installed.
-2. Install Cython if you haven't already:
+2. Install QuickQuant via pip:
 
     ```bash
-    pip install cython
-    ```
-
-3. Clone this repository and navigate to the project directory.
-4. Build the Cython extensions:
-
-    ```bash
-    python setup.py build_ext --inplace
+    pip install quickquant
     ```
 
 ## Usage
