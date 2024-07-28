@@ -1,5 +1,5 @@
 Metadata-Version: 2.1
-Name: QuickQuant
+Name: quickquant
 Version: 0.1
 Summary: A fast quant finance library using Cython
 Author: Nabarup Ghosh

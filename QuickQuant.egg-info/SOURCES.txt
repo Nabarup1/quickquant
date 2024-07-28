@@ -9,3 +9,7 @@ QuickQuant.egg-info/top_level.txt
 quickquant/__init__.py
 quickquant/module.c
 quickquant/module.pyx
+quickquant.egg-info/PKG-INFO
+quickquant.egg-info/SOURCES.txt
+quickquant.egg-info/dependency_links.txt
+quickquant.egg-info/top_level.txt
