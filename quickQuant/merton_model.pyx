@@ -26,7 +26,7 @@ def merton_model(double V0, double D, double T, double r, double sigma):
     
     d1 = (np.log(V0 / D) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
-    
+        
     equity_value = V0 * norm.cdf(d1) - D * np.exp(-r * T) * norm.cdf(d2)
     P_default = 1 - norm.cdf(d2)
     
