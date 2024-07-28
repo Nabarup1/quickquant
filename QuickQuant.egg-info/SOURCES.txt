@@ -1,0 +1,11 @@
+LICENSE
+MANIFEST.in
+README.md
+setup.py
+QuickQuant.egg-info/PKG-INFO
+QuickQuant.egg-info/SOURCES.txt
+QuickQuant.egg-info/dependency_links.txt
+QuickQuant.egg-info/top_level.txt
+quickquant/__init__.py
+quickquant/module.c
+quickquant/module.pyx

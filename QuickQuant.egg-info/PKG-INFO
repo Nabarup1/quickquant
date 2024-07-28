@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: QuickQuant
+Version: 0.1
+Summary: A fast quant finance library using Cython
+Author: Nabarup Ghosh
+Author-email: nabarupeducation@gmail.com
+License: Apache License 2.0
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+License-File: LICENSE
