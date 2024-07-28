@@ -24,6 +24,7 @@ cdef double heston_integrand(double phi, double S0, double K, double T, double r
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+
 def heston_option_price(double S0, double K, double T, double r, double v0, double theta, double kappa, double sigma, double rho, bint is_call=True):
     """
     Heston Model for pricing European call and put options using Fourier transform.
