@@ -1,7 +1,43 @@
-# quickquant/__init__.py
+from .models import (
+    black_scholes,
+    merton_model,
+    heston_model,
+    american_binomial,
+    american_trinomial,
+    american_finite_difference,
+    asian_options,
+    barrier_options,
+    lookback_options,
+    swaptions,
+    hull_white,
+    cir_model,
+    vasicek_model,
+    black_cox,
+    creditmetrics,
+    markowitz,
+    black_litterman,
+    risk_parity,
+    cox_ingersoll_ross,
+    kalman_filter
+)
 
-from quickQuant import black_scholes
-from quickQuant import merton_model
-from quickQuant import heston_option_price
+from .indicators import (
+    sma,
+    ema,
+    bollinger_bands,
+    rsi,
+    macd,
+    stochastic,
+    atr,
+    adx,
+    ichimoku,
+    volume_profile,
+    vwma
+)
 
-__all__ = ["black_scholes", "merton_model", "heston_option_price"]
+from .plotting import (
+    candle_chart,
+    heikin_ashi,
+    line_chart,
+    bar_chart
+)
