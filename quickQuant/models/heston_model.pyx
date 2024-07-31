@@ -1,62 +1,93 @@
-# heston_model.pyx
+# quickQuant/models/heston_model.pyx
+
 import numpy as np
-from scipy import integrate
 cimport numpy as np
-cimport cython
-from libc.math cimport exp, log, sqrt, cos, sin, pi
+from scipy.stats import norm
 
-cdef double char_func_real(double phi, double S0, double K, double T, double r, double v0, double theta, double kappa, double sigma, double rho, bint is_call):
-    cdef double u = 0.5
-    if is_call:
-        u = 0.5
-    else:
-        u = -0.5
-    cdef double b = kappa - rho * sigma
-    cdef double d = sqrt((rho * sigma * 1j * phi - b)**2 - (sigma**2) * (2 * u * 1j * phi - phi**2))
-    cdef double g = (b - rho * sigma * 1j * phi + d) / (b - rho * sigma * 1j * phi - d)
-    cdef double C = r * 1j * phi * T + kappa * theta / (sigma**2) * ((b - rho * sigma * 1j * phi + d) * T - 2 * log((1 - g * exp(d * T)) / (1 - g)))
-    cdef double D = (b - rho * sigma * 1j * phi + d) / (sigma**2) * ((1 - exp(d * T)) / (1 - g * exp(d * T)))
-    return exp(C + D * v0 + 1j * phi * log(S0 / K))
+__all__ = ['heston_call_price','heston_put_price']
 
-cdef double heston_integrand(double phi, double S0, double K, double T, double r, double v0, double theta, double kappa, double sigma, double rho, bint is_call):
-    cdef double integrand = (exp(-1j * phi * log(K)) * char_func_real(phi, S0, K, T, r, v0, theta, kappa, sigma, rho, is_call)) / (1j * phi)
-    return integrand.real
+cdef extern from "math.h":
+    double exp(double)
+    double sqrt(double)
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-
-def heston_option_price(double S0, double K, double T, double r, double v0, double theta, double kappa, double sigma, double rho, bint is_call=True):
+cpdef double heston_call_price(double S0, double K, double T, double r, double kappa, double theta, double sigma, double rho, double v0, int N=10000):
     """
-    Heston Model for pricing European call and put options using Fourier transform.
-    
+    Heston Model for European Call Option Pricing.
+
     Parameters:
-    S0         : double : Current stock price
-    K          : double : Strike price of the option
-    T          : double : Time to maturity (in years)
-    r          : double : Risk-free interest rate
-    v0         : double : Initial variance
-    theta      : double : Long-term variance
-    kappa      : double : Speed of reversion
-    sigma      : double : Volatility of volatility
-    rho        : double : Correlation between asset price and variance
-    is_call    : bint   : True for call option, False for put option
-    
+    - S0: Initial stock price
+    - K: Strike price
+    - T: Time to maturity (in years)
+    - r: Risk-free interest rate
+    - kappa: Rate of mean reversion of variance
+    - theta: Long-term mean variance
+    - sigma: Volatility of variance
+    - rho: Correlation between the two Brownian motions
+    - v0: Initial variance
+    - N: Number of simulation paths (default is 10000)
+
     Returns:
-    double : Price of the option
+    - Call option price
     """
-    
-    cdef double P1, P2, call_price, put_price, discount_factor
-    cdef double limit = 100.0
-    cdef double tol = 1e-10
+    cdef double dt = T / N
+    cdef double sqrt_dt = sqrt(dt)
+    cdef np.ndarray[double, ndim=1] S = np.empty(N)
+    cdef np.ndarray[double, ndim=1] v = np.empty(N)
+    cdef np.ndarray[double, ndim=1] prices = np.empty(N)
+    cdef int i, j
 
-    P1, err1 = integrate.quad(heston_integrand, 0, limit, args=(S0, K, T, r, v0, theta, kappa, sigma, rho, True), limit=limit, epsabs=tol)
-    P2, err2 = integrate.quad(heston_integrand, 0, limit, args=(S0, K, T, r, v0, theta, kappa, sigma, rho, False), limit=limit, epsabs=tol)
+    for i in range(N):
+        S[i] = S0
+        v[i] = v0
 
-    discount_factor = exp(-r * T)
-    call_price = S0 * 0.5 + (1 / pi) * P1 - K * discount_factor * (0.5 + (1 / pi) * P2)
-    put_price = call_price - S0 + K * discount_factor
-    
-    if is_call:
-        return call_price
-    else:
-        return put_price
+    for j in range(1, N):
+        for i in range(N):
+            dW1 = np.random.normal(0, 1) * sqrt_dt
+            dW2 = rho * dW1 + sqrt(1 - rho**2) * np.random.normal(0, 1) * sqrt_dt
+            v[i] = max(v[i] + kappa * (theta - v[i]) * dt + sigma * sqrt(v[i]) * dW2, 0)
+            S[i] = S[i] * exp((r - 0.5 * v[i]) * dt + sqrt(v[i]) * dW1)
+
+        prices[i] = max(S[i] - K, 0)
+
+    return exp(-r * T) * np.mean(prices)
+
+cpdef double heston_put_price(double S0, double K, double T, double r, double kappa, double theta, double sigma, double rho, double v0, int N=10000):
+    """
+    Heston Model for European Put Option Pricing.
+
+    Parameters:
+    - S0: Initial stock price
+    - K: Strike price
+    - T: Time to maturity (in years)
+    - r: Risk-free interest rate
+    - kappa: Rate of mean reversion of variance
+    - theta: Long-term mean variance
+    - sigma: Volatility of variance
+    - rho: Correlation between the two Brownian motions
+    - v0: Initial variance
+    - N: Number of simulation paths (default is 10000)
+
+    Returns:
+    - Put option price
+    """
+    cdef double dt = T / N
+    cdef double sqrt_dt = sqrt(dt)
+    cdef np.ndarray[double, ndim=1] S = np.empty(N)
+    cdef np.ndarray[double, ndim=1] v = np.empty(N)
+    cdef np.ndarray[double, ndim=1] prices = np.empty(N)
+    cdef int i, j
+
+    for i in range(N):
+        S[i] = S0
+        v[i] = v0
+
+    for j in range(1, N):
+        for i in range(N):
+            dW1 = np.random.normal(0, 1) * sqrt_dt
+            dW2 = rho * dW1 + sqrt(1 - rho**2) * np.random.normal(0, 1) * sqrt_dt
+            v[i] = max(v[i] + kappa * (theta - v[i]) * dt + sigma * sqrt(v[i]) * dW2, 0)
+            S[i] = S[i] * exp((r - 0.5 * v[i]) * dt + sqrt(v[i]) * dW1)
+
+        prices[i] = max(K - S[i], 0)
+
+    return exp(-r * T) * np.mean(prices)
