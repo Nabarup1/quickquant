@@ -1,33 +1,36 @@
-# merton_model.pyx
-import numpy as np
-from scipy.stats import norm
-cimport numpy as np
-cimport cython
+# quickQuant/models/merton_model.pyx
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def merton_model(double V0, double D, double T, double r, double sigma):
+import numpy as np
+cimport numpy as np
+from scipy.stats import norm
+__all__ = ['merton_model']
+
+cdef extern from "math.h":
+    double exp(double)
+    double log(double)
+    double sqrt(double)
+
+cpdef tuple merton_model(double V0, double D, double T, double r, double sigma):
     """
-    Merton Model for pricing equity as a call option on the firm's assets.
-    
+    Merton Model for Structural Credit Risk.
+
     Parameters:
-    V0    : double   : Initial value of the company's assets
-    D     : double   : Face value of the company's debt
-    T     : double   : Time to maturity (in years)
-    r     : double   : Risk-free interest rate
-    sigma : double   : Volatility of the company's asset value
-    
+    - V0: Initial value of the company's assets
+    - D: Face value of the company's debt
+    - T: Time to maturity (in years)
+    - r: Risk-free interest rate
+    - sigma: Volatility of the company's asset value
+
     Returns:
-    double : Value of the company's equity
-    double : Probability of default
+    - Equity value
+    - Probability of default
     """
-    
     cdef double d1, d2, equity_value, P_default
-    
-    d1 = (np.log(V0 / D) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
-    d2 = d1 - sigma * np.sqrt(T)
-        
-    equity_value = V0 * norm.cdf(d1) - D * np.exp(-r * T) * norm.cdf(d2)
-    P_default = 1 - norm.cdf(d2)
-    
+
+    d1 = (log(V0 / D) + (r + 0.5 * sigma**2) * T) / (sigma * sqrt(T))
+    d2 = d1 - sigma * sqrt(T)
+
+    equity_value = V0 * norm.cdf(d1) - D * exp(-r * T) * norm.cdf(d2)
+    P_default = norm.cdf(-d2)
+
     return equity_value, P_default

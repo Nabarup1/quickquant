@@ -1,16 +1,16 @@
-name: Publish quickquant Package
+name: Publish quickquant 
 
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger the workflow only on new tags
+      - 'v*.*.*'  
 
 jobs:
   publish:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]  # Define the OS matrix
+        os: [ubuntu-latest, macos-latest, windows-latest]  
 
     steps:
     - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'  # Specify the Python version you need
+        python-version: '3.x'  
 
     - name: Install dependencies
       run: |
